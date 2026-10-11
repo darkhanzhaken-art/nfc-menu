@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Электронное Меню | Ресторан & Кафе</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            900: '#78350f',
+                        },
+                        dark: {
+                            800: '#18181b',
+                            900: '#09090b',
+                            950: '#030712'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for horizontal categories */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .glass-card {
+            background: rgba(24, 24, 27, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-nav {
+            background: rgba(9, 9, 11, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        /* Fade in animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+<body class="bg-dark-950 text-zinc-100 font-sans antialiased min-h-full flex flex-col pb-24">
+
+    <!-- Header / Banner -->
+    <header class="relative bg-dark-900 border-b border-zinc-800/80 overflow-hidden">
+        <!-- Background Decorative Glow -->
+        <div class="absolute -top-24 -left-24 w-72 h-72 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -top-10 -right-10 w-60 h-60 bg-amber-600/10 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div class="max-w-2xl mx-auto px-4 pt-6 pb-5 relative z-10">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-13 h-13 rounded-2xl bg-gradient-to-tr from-brand-600 to-amber-400 p-0.5 shadow-lg shadow-brand-500/20">
+                        <div class="w-full h-full bg-dark-900 rounded-[14px] flex items-center justify-center overflow-hidden">
+                            <i class="ph-fill ph-cooking-pot text-2xl text-brand-400"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-xl font-bold tracking-tight text-white">Gourmet Haven</h1>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> Открыто
+                            </span>
+                        </div>
+                        <p class="text-xs text-zinc-400 mt-0.5 flex items-center gap-1">
+                            <i class="ph-bold ph-map-pin text-brand-400"></i> Столик № <span id="table-number" class="text-white font-medium">04</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Call Waiter Button -->
+                <button onclick="openCallWaiterModal()" class="flex items-center gap-2 bg-zinc-800/90 hover:bg-zinc-700 active:scale-95 text-xs font-semibold text-zinc-200 px-3.5 py-2.5 rounded-xl border border-zinc-700/60 transition-all shadow-sm">
+                    <i class="ph-bell text-brand-400 text-lg"></i>
+                    <span class="hidden sm:inline">Вызов официанта</span>
+                    <span class="sm:hidden">Вызов</span>
+                </button>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="mt-5 relative">
+                <i class="ph-bold ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-lg"></i>
+                <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Поиск блюд, напитков, десертов..." 
+                       class="w-full bg-zinc-900/90 text-sm text-white placeholder-zinc-500 pl-10 pr-10 py-3 rounded-2xl border border-zinc-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all shadow-inner">
+                <button id="clear-search" onclick="clearSearch()" class="hidden absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
+                    <i class="ph-bold ph-x-circle text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Sticky Categories Bar -->
+        <div class="sticky top-0 z-30 glass-nav border-t border-zinc-800/60 shadow-md">
+            <div class="max-w-2xl mx-auto px-4 py-3">
+                <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5" id="categories-container">
+                    <!-- Categories dynamically generated here -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-2xl mx-auto px-4 pt-5 flex-1 w-full">
+        <!-- Results Banner (shown on search) -->
+        <div id="search-info" class="hidden mb-4 flex items-center justify-between text-xs text-zinc-400">
+            <span>Результаты поиска по запросу: <strong id="search-query-text" class="text-white"></strong></span>
+            <button onclick="clearSearch()" class="text-brand-400 hover:underline">Сбросить</button>
+        </div>
+
+        <!-- Menu Items List -->
+        <div id="menu-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Dynamic Food Cards Inject Here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden py-16 text-center">
+            <div class="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto mb-3 text-zinc-500">
+                <i class="ph-bold ph-magnifying-glass text-2xl"></i>
+            </div>
+            <h3 class="text-base font-semibold text-white">Ничего не найдено</h3>
+            <p class="text-xs text-zinc-400 mt-1 max-w-xs mx-auto">Попробуйте изменить поисковый запрос или выбрать другую категорию меню.</p>
+        </div>
+    </main>
+
+    <!-- Sticky Bottom Cart Bar -->
+    <div id="bottom-bar" class="fixed bottom-0 left-0 right-0 z-40 glass-nav border-t border-zinc-800/80 p-3.5 transition-transform duration-300 transform translate-y-full">
+        <div class="max-w-2xl mx-auto flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="openCartModal()">
+                <div class="relative bg-brand-500 text-dark-950 w-11 h-11 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/25">
+                    <i class="ph-bold ph-shopping-bag text-xl"></i>
+                    <span id="cart-badge" class="absolute -top-1.5 -right-1.5 bg-white text-dark-950 font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-md border-2 border-dark-950">0</span>
+                </div>
+                <div>
+                    <span class="text-[11px] text-zinc-400 font-medium block leading-none">Ваш заказ</span>
+                    <span id="cart-total-price" class="text-base font-bold text-white tracking-tight">0 ₸</span>
+                </div>
+            </div>
+
+            <button onclick="openCartModal()" class="flex-1 sm:flex-initial bg-gradient-to-r from-brand-500 to-amber-500 hover:from-brand-400 hover:to-amber-400 active:scale-95 text-dark-950 font-bold text-sm px-6 py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20">
+                <span>Просмотреть заказ</span>
+                <i class="ph-bold ph-arrow-right text-base"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Item Details / Customize Modal -->
+    <div id="item-modal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-zinc-900 border border-zinc-800 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl transition-transform duration-300 transform translate-y-full sm:translate-y-0 max-h-[90vh] flex flex-col">
+            <div class="relative h-56 bg-zinc-800">
+                <img id="modal-item-img" src="" alt="" class="w-full h-full object-cover">
+                <button onclick="closeItemModal()" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-dark-950/70 hover:bg-dark-950 backdrop-blur-md text-white flex items-center justify-center transition-all">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+                <div id="modal-item-tag" class="absolute bottom-3 left-3"></div>
+            </div>
+
+            <div class="p-5 overflow-y-auto flex-1 space-y-4">
+                <div>
+                    <div class="flex items-start justify-between gap-3">
+                        <h2 id="modal-item-title" class="text-xl font-bold text-white leading-tight"></h2>
+                        <span id="modal-item-price" class="text-lg font-extrabold text-brand-400 shrink-0"></span>
+                    </div>
+                    <p id="modal-item-desc" class="text-xs text-zinc-400 mt-2 leading-relaxed"></p>
+                </div>
+
+                <!-- Special Instructions / Notes -->
+                <div class="pt-2">
+                    <label class="block text-xs font-semibold text-zinc-300 mb-1.5 flex items-center gap-1.5">
+                        <i class="ph-bold ph-note-pencil text-brand-400"></i> Комментарий к блюду
+                    </label>
+                    <textarea id="modal-item-notes" rows="2" placeholder="Например: без лука, соус отдельно..." 
+                              class="w-full bg-zinc-950/80 text-xs text-white placeholder-zinc-500 p-3 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all resize-none"></textarea>
+                </div>
+            </div>
+
+            <!-- Modal Footer Controls -->
+            <div class="p-4 bg-zinc-950 border-t border-zinc-800/80 flex items-center justify-between gap-4">
+                <div class="flex items-center bg-zinc-800/80 rounded-xl p-1 border border-zinc-700/50">
+                    <button onclick="adjustModalQty(-1)" class="w-9 h-9 rounded-lg bg-zinc-700/50 hover:bg-zinc-700 text-white flex items-center justify-center transition-all active:scale-90">
+                        <i class="ph-bold ph-minus text-xs"></i>
+                    </button>
+                    <span id="modal-item-qty" class="w-10 text-center font-bold text-sm text-white">1</span>
+                    <button onclick="adjustModalQty(1)" class="w-9 h-9 rounded-lg bg-zinc-700/50 hover:bg-zinc-700 text-white flex items-center justify-center transition-all active:scale-90">
+                        <i class="ph-bold ph-plus text-xs"></i>
+                    </button>
+                </div>
+
+                <button id="modal-add-btn" onclick="confirmAddToCart()" class="flex-1 bg-gradient-to-r from-brand-500 to-amber-500 text-dark-950 font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-brand-500/20 hover:from-brand-400 hover:to-amber-400 active:scale-95 transition-all flex items-center justify-center gap-2">
+                    <span>Добавить</span>
+                    <span id="modal-btn-price" class="opacity-90">0 ₸</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-zinc-900 border border-zinc-800 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl transition-transform duration-300 transform translate-y-full sm:translate-y-0 max-h-[85vh] flex flex-col">
+            <!-- Cart Header -->
+            <div class="p-4 bg-zinc-950 border-b border-zinc-800/80 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="ph-fill ph-shopping-bag text-brand-400 text-xl"></i>
+                    <h2 class="text-base font-bold text-white">Ваш заказ (Столик №04)</h2>
+                </div>
+                <button onclick="closeCartModal()" class="w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 flex items-center justify-center transition-all">
+                    <i class="ph-bold ph-x text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Cart Items List -->
+            <div id="cart-items-container" class="p-4 overflow-y-auto flex-1 space-y-3 divide-y divide-zinc-800/60">
+                <!-- Cart items inject here dynamically -->
+            </div>
+
+            <!-- Cart Summary Footer -->
+            <div id="cart-footer" class="p-4 bg-zinc-950 border-t border-zinc-800/80 space-y-3">
+                <div class="space-y-1.5 text-xs">
+                    <div class="flex justify-between text-zinc-400">
+                        <span>Подытог:</span>
+                        <span id="cart-subtotal" class="text-white font-medium">0 ₸</span>
+                    </div>
+                    <div class="flex justify-between text-zinc-400">
+                        <span>Обслуживание (10%):</span>
+                        <span id="cart-service" class="text-white font-medium">0 ₸</span>
+                    </div>
+                    <div class="flex justify-between text-sm font-bold text-white pt-2 border-t border-zinc-800">
+                        <span>Итого к оплате:</span>
+                        <span id="cart-final-total" class="text-brand-400 text-base font-extrabold">0 ₸</span>
+                    </div>
+                </div>
+
+                <button onclick="sendOrder()" class="w-full bg-gradient-to-r from-brand-500 to-amber-500 text-dark-950 font-extrabold text-sm py-3.5 px-4 rounded-xl shadow-lg shadow-brand-500/20 hover:from-brand-400 hover:to-amber-400 active:scale-95 transition-all flex items-center justify-center gap-2">
+                    <i class="ph-bold ph-paper-plane-right text-lg"></i>
+                    <span>Отправить заказ официанту</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call Waiter Modal -->
+    <div id="waiter-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200 p-4">
+        <div class="bg-zinc-900 border border-zinc-800 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-center">
+            <div class="w-14 h-14 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-2xl flex items-center justify-center mx-auto">
+                <i class="ph-fill ph-bell-ringing text-2xl"></i>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-bold text-white">Вызов официанта</h3>
+                <p class="text-xs text-zinc-400 mt-1">Выберите причину обращения для столика №04:</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-2 pt-1 text-left">
+                <button onclick="submitWaiterCall('Принести меню')" class="w-full bg-zinc-800/80 hover:bg-zinc-700 p-3 rounded-xl text-xs font-semibold text-zinc-200 border border-zinc-700/50 flex items-center gap-3 transition-all">
+                    <i class="ph-bold ph-book-open text-brand-400 text-base"></i>
+                    <span>Принести физическое меню</span>
+                </button>
+                <button onclick="submitWaiterCall('Нужна консультация')" class="w-full bg-zinc-800/80 hover:bg-zinc-700 p-3 rounded-xl text-xs font-semibold text-zinc-200 border border-zinc-700/50 flex items-center gap-3 transition-all">
+                    <i class="ph-bold ph-chat-circle-dots text-brand-400 text-base"></i>
+                    <span>Помочь с выбором блюда</span>
+                </button>
+                <button onclick="submitWaiterCall('Просчитать счет')" class="w-full bg-zinc-800/80 hover:bg-zinc-700 p-3 rounded-xl text-xs font-semibold text-zinc-200 border border-zinc-700/50 flex items-center gap-3 transition-all">
+                    <i class="ph-bold ph-receipt text-brand-400 text-base"></i>
+                    <span>Принести счет / Kaspi QR</span>
+                </button>
+            </div>
+
+            <button onclick="closeCallWaiterModal()" class="w-full py-2.5 text-xs text-zinc-400 hover:text-white font-medium">Отмена</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification System -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-zinc-800/95 text-white border border-zinc-700 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 opacity-0 pointer-events-none transition-all duration-300 transform -translate-y-4">
+        <i id="toast-icon" class="ph-fill ph-check-circle text-emerald-400 text-xl"></i>
+        <span id="toast-msg" class="text-xs font-medium">Уведомление</span>
+    </div>
+
+    <script>
+        // Restaurant Menu Dataset
+        const MENU_DATA = [
+            {
+                id: 1,
+                name: "Стейк Рибай с травяным маслом",
+                category: "mains",
+                price: 8900,
+                description: "Сочный стейк из мраморной говядины зернового откорма. Подается с запеченным чесноком и ароматизированным сливочным маслом.",
+                image: "https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=600&q=80",
+                tag: "Шеф-выбор",
+                tagColor: "bg-amber-500/20 text-amber-300 border-amber-500/30"
+            },
+            {
+                id: 2,
+                name: "Бургер Gourmet с трюфельным соусом",
+                category: "mains",
+                price: 3800,
+                description: "Котлета из котлетного бленда Wagyu, сыр Чеддер, карамелизованный лук, свежая рукола и домашний трюфельный майонез.",
+                image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80",
+                tag: "Хит продаж",
+                tagColor: "bg-rose-500/20 text-rose-300 border-rose-500/30"
+            },
+            {
+                id: 3,
+                name: "Салат Буррата с томатами и песто",
+                category: "appetizers",
+                price: 4200,
+                description: "Нежнейший итальянский сыр Буррата, сладкие томаты черри, соус из свежего базилика и бальзамический крем.",
+                image: "https://images.unsplash.com/photo-1592417817098-8f3d6eb19655?auto=format&fit=crop&w=600&q=80",
+                tag: "NEW",
+                tagColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+            },
+            {
+                id: 4,
+                name: "Паста Карбонара по-римски",
+                category: "mains",
+                price: 3400,
+                description: "Классический рецепт без сливок: паста спагетти, хрустящий гуанчиале, желтки свежих яиц и сыр Пекорино Романо.",
+                image: "https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=600&q=80",
+                tag: null
+            },
+            {
+                id: 5,
+                name: "Тартар из лосося с авокадо",
+                category: "appetizers",
+                price: 4600,
+                description: "Свежий атлантический лосось, спелый авокадо, каперсы, цитрусовая заправка и хрустящие чипсы из багета.",
+                image: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=600&q=80",
+                tag: "Популярно",
+                tagColor: "bg-amber-500/20 text-amber-300 border-amber-500/30"
+            },
+            {
+                id: 6,
+                name: "Лимонад Маракуйя-Мята (1л)",
+                category: "drinks",
+                price: 2400,
+                description: "Освежающий авторский лимонад с натуральным пюре маракуйи, свежей мятой и минеральной водой.",
+                image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80",
+                tag: null
+            },
+            {
+                id: 7,
+                name: "Кофейный напиток Flat White",
+                category: "drinks",
+                price: 1600,
+                description: "Двойной эспрессо из 100% арабики свежей обжарки с бархатистой молочной пеной.",
+                image: "https://images.unsplash.com/photo-1577968897966-3d4325b36b61?auto=format&fit=crop&w=600&q=80",
+                tag: null
+            },
+            {
+                id: 8,
+                name: "Фирменный Чизкейк Сан-Себастьян",
+                category: "desserts",
+                price: 2800,
+                description: "Знаменитый баскский сожженный чизкейк с нежной кремовой текстурой внутри. Подается с теплым ганашем из молочного шоколада.",
+                image: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=600&q=80",
+                tag: "Рекомендуем",
+                tagColor: "bg-purple-500/20 text-purple-300 border-purple-500/30"
+            }
+        ];
+
+        const CATEGORIES = [
+            { id: "all", name: "Все меню", icon: "ph-squares-four" },
+            { id: "mains", name: "Горячие блюда", icon: "ph-cooking-pot" },
+            { id: "appetizers", name: "Закуски & Салаты", icon: "ph-bowl-food" },
+            { id: "drinks", name: "Напитки", icon: "ph-wine" },
+            { id: "desserts", name: "Десерты", icon: "ph-cake" }
+        ];
+
+        // State Management
+        let activeCategory = "all";
+        let searchQuery = "";
+        let cart = []; // Array of { item, qty, notes }
+        let currentModalItem = null;
+        let currentModalQty = 1;
+
+        // Initialize App on DOM Load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderCategories();
+            renderMenu();
+            updateCartUI();
+        });
+
+        // Format Currency Helper
+        function formatKZT(amount) {
+            return new Intl.NumberFormat('ru-KZ', { style: 'currency', currency: 'KZT', maximumFractionDigits: 0 }).format(amount).replace('KZT', '₸');
+        }
+
+        // Render Categories
+        function renderCategories() {
+            const container = document.getElementById('categories-container');
+            container.innerHTML = CATEGORIES.map(cat => `
+                <button onclick="setCategory('${cat.id}')" 
+                        class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2 border ${
+                            activeCategory === cat.id 
+                            ? 'bg-brand-500 text-dark-950 border-brand-500 shadow-md shadow-brand-500/20' 
+                            : 'bg-zinc-900/80 text-zinc-400 border-zinc-800 hover:text-white hover:bg-zinc-800'
+                        }">
+                    <i class="ph-bold ${cat.icon} text-sm"></i>
+                    <span>${cat.name}</span>
+                </button>
+            `).join('');
+        }
+
+        function setCategory(id) {
+            activeCategory = id;
+            renderCategories();
+            renderMenu();
+        }
+
+        // Search Handling
+        function handleSearch(val) {
+            searchQuery = val.trim().toLowerCase();
+            const clearBtn = document.getElementById('clear-search');
+            const searchInfo = document.getElementById('search-info');
+            const searchQueryText = document.getElementById('search-query-text');
+
+            if (searchQuery.length > 0) {
+                clearBtn.classList.remove('hidden');
+                searchInfo.classList.remove('hidden');
+                searchQueryText.textContent = val;
+            } else {
+                clearBtn.classList.add('hidden');
+                searchInfo.classList.add('hidden');
+            }
+            renderMenu();
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            handleSearch('');
+        }
+
+        // Render Menu Items Grid
+        function renderMenu() {
+            const grid = document.getElementById('menu-grid');
+            const emptyState = document.getElementById('empty-state');
+
+            const filtered = MENU_DATA.filter(item => {
+                const matchesCat = activeCategory === 'all' || item.category === activeCategory;
+                const matchesSearch = item.name.toLowerCase().includes(searchQuery) || item.description.toLowerCase().includes(searchQuery);
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = filtered.map(item => `
+                <div onclick="openItemModal(${item.id})" class="glass-card rounded-2xl overflow-hidden hover:border-zinc-700 transition-all cursor-pointer group flex flex-col justify-between animate-fade-in">
+                    <div>
+                        <div class="relative h-44 overflow-hidden bg-zinc-900">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            ${item.tag ? `
+                                <span class="absolute top-2.5 left-2.5 text-[10px] font-bold px-2.5 py-1 rounded-lg border backdrop-blur-md ${item.tagColor}">
+                                    ${item.tag}
+                                </span>
+                            ` : ''}
+                        </div>
+                        <div class="p-3.5">
+                            <h3 class="font-bold text-sm text-white group-hover:text-brand-400 transition-colors line-clamp-1">${item.name}</h3>
+                            <p class="text-[11px] text-zinc-400 mt-1 line-clamp-2 leading-relaxed">${item.description}</p>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 pt-0 flex items-center justify-between gap-2 mt-2">
+                        <span class="text-sm font-extrabold text-white">${formatKZT(item.price)}</span>
+                        <button onclick="event.stopPropagation(); openItemModal(${item.id})" class="w-8 h-8 rounded-xl bg-brand-500/10 hover:bg-brand-500 text-brand-400 hover:text-dark-950 flex items-center justify-center transition-all border border-brand-500/20">
+                            <i class="ph-bold ph-plus text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Modal Logic for Item Detail
+        function openItemModal(itemId) {
+            currentModalItem = MENU_DATA.find(i => i.id === itemId);
+            if (!currentModalItem) return;
+
+            currentModalQty = 1;
+            document.getElementById('modal-item-img').src = currentModalItem.image;
+            document.getElementById('modal-item-title').textContent = currentModalItem.name;
+            document.getElementById('modal-item-price').textContent = formatKZT(currentModalItem.price);
+            document.getElementById('modal-item-desc').textContent = currentModalItem.description;
+            document.getElementById('modal-item-notes').value = '';
+            document.getElementById('modal-item-qty').textContent = currentModalQty;
+
+            const tagContainer = document.getElementById('modal-item-tag');
+            if (currentModalItem.tag) {
+                tagContainer.innerHTML = `<span class="text-xs font-bold px-3 py-1 rounded-lg border backdrop-blur-md ${currentModalItem.tagColor}">${currentModalItem.tag}</span>`;
+            } else {
+                tagContainer.innerHTML = '';
+            }
+
+            updateModalPrice();
+
+            const modal = document.getElementById('item-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closeItemModal() {
+            const modal = document.getElementById('item-modal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function adjustModalQty(delta) {
+            if (currentModalQty + delta >= 1) {
+                currentModalQty += delta;
+                document.getElementById('modal-item-qty').textContent = currentModalQty;
+                updateModalPrice();
+            }
+        }
+
+        function updateModalPrice() {
+            const totalPrice = currentModalItem.price * currentModalQty;
+            document.getElementById('modal-btn-price').textContent = `(${formatKZT(totalPrice)})`;
+        }
+
+        function confirmAddToCart() {
+            const notes = document.getElementById('modal-item-notes').value.trim();
+            const existingIndex = cart.findIndex(c => c.item.id === currentModalItem.id && c.notes === notes);
+
+            if (existingIndex > -1) {
+                cart[existingIndex].qty += currentModalQty;
+            } else {
+                cart.push({
+                    item: currentModalItem,
+                    qty: currentModalQty,
+                    notes: notes
+                });
+            }
+
+            closeItemModal();
+            updateCartUI();
+            showToast(`Добавлено: ${currentModalItem.name}`);
+        }
+
+        // Cart Management
+        function updateCartUI() {
+            const bottomBar = document.getElementById('bottom-bar');
+            const totalQty = cart.reduce((sum, i) => sum + i.qty, 0);
+            const subtotal = cart.reduce((sum, i) => sum + (i.item.price * i.qty), 0);
+
+            document.getElementById('cart-badge').textContent = totalQty;
+            document.getElementById('cart-total-price').textContent = formatKZT(subtotal);
+
+            if (totalQty > 0) {
+                bottomBar.classList.remove('translate-y-full');
+            } else {
+                bottomBar.classList.add('translate-y-full');
+                closeCartModal();
+            }
+        }
+
+        function openCartModal() {
+            if (cart.length === 0) return;
+            renderCartItems();
+            const modal = document.getElementById('cart-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closeCartModal() {
+            const modal = document.getElementById('cart-modal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById('cart-items-container');
+            const subtotal = cart.reduce((sum, i) => sum + (i.item.price * i.qty), 0);
+            const service = subtotal * 0.1; // 10% Service Fee
+            const total = subtotal + service;
+
+            container.innerHTML = cart.map((cartItem, idx) => `
+                <div class="pt-3 first:pt-0 flex items-start justify-between gap-3">
+                    <div class="flex-1">
+                        <h4 class="text-xs font-bold text-white">${cartItem.item.name}</h4>
+                        <span class="text-xs font-semibold text-brand-400 mt-0.5 block">${formatKZT(cartItem.item.price)}</span>
+                        ${cartItem.notes ? `<p class="text-[10px] text-zinc-400 italic mt-1 bg-zinc-950 p-1.5 rounded-md">"${cartItem.notes}"</p>` : ''}
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center bg-zinc-800 rounded-lg p-0.5 border border-zinc-700/50">
+                            <button onclick="updateCartQty(${idx}, -1)" class="w-6 h-6 rounded bg-zinc-700 hover:bg-zinc-600 text-white flex items-center justify-center text-xs">
+                                <i class="ph-bold ph-minus text-[10px]"></i>
+                            </button>
+                            <span class="w-6 text-center text-xs font-bold text-white">${cartItem.qty}</span>
+                            <button onclick="updateCartQty(${idx}, 1)" class="w-6 h-6 rounded bg-zinc-700 hover:bg-zinc-600 text-white flex items-center justify-center text-xs">
+                                <i class="ph-bold ph-plus text-[10px]"></i>
+                            </button>
+                        </div>
+                        <button onclick="removeCartItem(${idx})" class="text-zinc-500 hover:text-rose-400 p-1">
+                            <i class="ph-bold ph-trash text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('cart-subtotal').textContent = formatKZT(subtotal);
+            document.getElementById('cart-service').textContent = formatKZT(service);
+            document.getElementById('cart-final-total').textContent = formatKZT(total);
+        }
+
+        function updateCartQty(index, delta) {
+            if (cart[index].qty + delta > 0) {
+                cart[index].qty += delta;
+            } else {
+                cart.splice(index, 1);
+            }
+            updateCartUI();
+            if (cart.length > 0) renderCartItems();
+        }
+
+        function removeCartItem(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+            if (cart.length > 0) renderCartItems();
+        }
+
+        function sendOrder() {
+            if (cart.length === 0) return;
+            closeCartModal();
+            cart = [];
+            updateCartUI();
+            showToast("Ваш заказ успешно отправлен на кухню! 🍳");
+        }
+
+        // Call Waiter Modal Logic
+        function openCallWaiterModal() {
+            const modal = document.getElementById('waiter-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closeCallWaiterModal() {
+            const modal = document.getElementById('waiter-modal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function submitWaiterCall(reason) {
+            closeCallWaiterModal();
+            showToast(`Официант уведомлен: "${reason}"`);
+        }
+
+        // Toast Helper
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = message;
+            toast.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-4');
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none', '-translate-y-4');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
